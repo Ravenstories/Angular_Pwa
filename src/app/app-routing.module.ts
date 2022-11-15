@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { DataGridComponent } from './data-grid/data-grid.component';
+import { TableComponent } from './components/table/table.component';
 
 const routes: Routes = [
-  {path: "pictures", component: DataGridComponent}
+  {path: "table", component: TableComponent}
 ];
 
 @NgModule({

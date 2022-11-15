@@ -8,77 +8,75 @@ import { UploadFilesService } from 'src/app/services/upload-files.service';
   templateUrl: './upload-images.component.html',
   styleUrls: ['./upload-images.component.css']
 })
+
 export class UploadImagesComponent implements OnInit {
   selectedFiles?: FileList;
-  currentFile?: File;
-  progress = 0;
-  message = '';
-  preview = '';
-
+  selectedFileNames: string[] = [];
+  progressInfos: any[] = [];
+  message: string[] = [];
+  previews: string[] = [];
   imageInfos?: Observable<any>;
 
   constructor(private uploadService: UploadFilesService) { }
 
   ngOnInit(): void {
+    this.imageInfos = this.uploadService.getFiles();
   }
 
   selectFiles(event: any): void {
-    this.message = "";
-    this.preview = "";
-    this.progress = 0;
-    this.selectFiles = event.target.files;
-
-    if (this.selectedFiles) {
-      const file: File | null = this.selectedFiles.item(0);
+    this.message = [];
+    this.progressInfos = [];
+    this.selectedFileNames = [];
+    this.selectedFiles = event.target.files;
   
-      if (file) {
-        this.preview = '';
-        this.currentFile = file;
-  
+    this.previews = [];
+    if (this.selectedFiles && this.selectedFiles[0]) {
+      const numberOfFiles = this.selectedFiles.length;
+      for (let i = 0; i < numberOfFiles; i++) {
         const reader = new FileReader();
   
         reader.onload = (e: any) => {
           console.log(e.target.result);
-          this.preview = e.target.result;
+          this.previews.push(e.target.result);
         };
   
-        reader.readAsDataURL(this.currentFile);
+        reader.readAsDataURL(this.selectedFiles[i]);
+  
+        this.selectedFileNames.push(this.selectedFiles[i].name);
       }
     }
   }
   
-  upload(): void {
-    this.progress = 0;
+  
+  uploadFiles(): void {
+    this.message = [];
   
     if (this.selectedFiles) {
-      const file: File | null = this.selectedFiles.item(0);
-  
-      if (file) {
-        this.currentFile = file;
-  
-        this.uploadService.upload(this.currentFile).subscribe({
-          next: (event: any) => {
-            if (event.type === HttpEventType.UploadProgress) {
-              this.progress = Math.round((100 * event.loaded) / event.total);
-            } else if (event instanceof HttpResponse) {
-              this.message = event.body.message;
-              this.imageInfos = this.uploadService.getFiles();
-            }
-          },
-          error: (err: any) => {
-            console.log(err);
-            this.progress = 0;
-  
-            if (err.error && err.error.message) {
-              this.message = err.error.message;
-            } else {
-              this.message = 'Could not upload the image!';
-            }
-  
-            this.currentFile = undefined;
-          },
-        });
+      for (let i = 0; i < this.selectedFiles.length; i++) {
+        this.upload(i, this.selectedFiles[i]);
       }
+    }
+  }
+
+  upload(idx: number, file: File): void {
+    this.progressInfos[idx] = { value: 0, fileName: file.name };
+  
+    if (file) {
+      this.uploadService.upload(file).subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            this.progressInfos[idx].value = Math.round(100 * event.loaded / event.total);
+          } else if (event instanceof HttpResponse) {
+            const msg = 'Uploaded the file successfully: ' + file.name;
+            this.message.push(msg);
+            this.imageInfos = this.uploadService.getFiles();
+          }
+        },
+        (err: any) => {
+          this.progressInfos[idx].value = 0;
+          const msg = 'Could not upload the file: ' + file.name;
+          this.message.push(msg);
+        });
     }
   }
 
