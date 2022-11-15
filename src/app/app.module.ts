@@ -17,6 +17,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatListModule } from '@angular/material/list';
+import {MatIconModule} from '@angular/material/icon';
 
 import { UploadImagesComponent } from './components/upload-images/upload-images.component';
 import { TableComponent } from './components/table/table.component';
@@ -37,7 +38,8 @@ const materialModules = [
   MatInputModule,
   MatFormFieldModule,
   MatProgressBarModule,
-  MatListModule
+  MatListModule,
+  MatIconModule
 ];
 
 @NgModule({
